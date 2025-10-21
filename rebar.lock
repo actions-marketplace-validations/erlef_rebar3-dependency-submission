@@ -1,0 +1,4 @@
+[{<<"purl">>,
+  {git,"git@github.com:erlef/purl.git",
+       {ref,"d64773d59dfd1d6b8920209f219e3c796c974a3a"}},
+  0}].

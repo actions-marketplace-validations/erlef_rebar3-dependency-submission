@@ -1,0 +1,14 @@
+{application, rebar_dependency_submission, [
+    {description,
+        "Calculates dependencies for Rebar3 and submits the list to the GitHub Dependency Submission API"},
+    {vsn, "0.1.0"},
+    {registered, []},
+    {applications, [
+        kernel,
+        stdlib
+    ]},
+    {env, []},
+    {modules, []},
+    {licenses, ["Apache-2.0"]},
+    {links, []}
+]}.
