@@ -1,9 +1,14 @@
 # Directories
 .github/
 _build/
-docs/
+scripts/
+tests/
+doc/
 
 # Files
-.dockerignore
-Dockerfile*
+.gitignore
+.tool-versions
+action.yaml
+example.lock
+LICENSE.md
 README.md
