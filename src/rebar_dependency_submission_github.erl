@@ -81,7 +81,7 @@ api_url(#{api_url := ApiUrl, repo := RepoOwner} = Flags) ->
             path := ["/repos/", RepoOwner, "/dependency-graph/snapshots"]
         })
     of
-        {error, Reason} -> ?error(Reason, [Flags], #{});
+        {error, Reason, _} -> ?error(Reason, [Flags], #{});
         URL -> URL
     end.
 
@@ -166,14 +166,6 @@ See https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-
 """.
 end_group() ->
     workflow_command(endgroup, #{}, "", []).
-
--doc """
-Prevents the given value from being shown in the log on GitHub.
-
-See https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-commands#masking-a-value-in-a-log
-""".
-add_mask(Value) ->
-    workflow_command(add_mask, #{}, "~ts", [Value]).
 
 -doc false.
 workflow_command(Type, Parameters, Format, Args) when

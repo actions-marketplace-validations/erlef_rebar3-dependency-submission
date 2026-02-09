@@ -114,8 +114,8 @@ runtime_dependencies(#{applications := Applications}, App, AppManifest) ->
     RuntimeDependencies = maps:fold(
         fun application_dependency_graph/3, digraph:new([private]), Applications
     ),
-    application_dependency_graph(App, AppManifest, RuntimeDependencies),
-    orebar_dependency_submissionets:from_list(
+    _ = application_dependency_graph(App, AppManifest, RuntimeDependencies),
+    ordsets:from_list(
         digraph_utils:reachable([App], RuntimeDependencies)
     ).
 
@@ -159,7 +159,7 @@ resolve_dependency(LocalName, {Version, DepLevel}, #{
             end,
         scope =>
             case
-                orebar_dependency_submissionets:is_element(
+                ordsets:is_element(
                     LocalName, RuntimeDependencies
                 )
             of
