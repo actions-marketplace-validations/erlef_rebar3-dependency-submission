@@ -20,7 +20,7 @@
 -include("internal.hrl").
 
 start() ->
-    %% Use Mozilla CA store (rebar3 does this too)
+    %% Use Mozilla CA store (Rebar3 does this too)
     ok = application:set_env(public_key, cacerts_path, certifi:cacertfile()),
     public_key:cacerts_clear(),
     public_key:cacerts_load().
