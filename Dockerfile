@@ -1,4 +1,5 @@
-FROM erlang:28.2.0.0-slim
+# Try to keep consistent with .tool-versions
+FROM erlang:28.3.1-slim
 
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -qq git --no-install-recommends && \
