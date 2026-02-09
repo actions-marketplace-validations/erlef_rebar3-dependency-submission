@@ -52,4 +52,8 @@ jobs:
 
       - name: Test 'scripts'
         run: |
+          mkdir -p "${HOME}"/.ssh
+          eval "$(ssh-agent -s)"
+          ssh-add - <<<"${{ inputs.ssh-private-key }}"
+
           ./scripts/build-and-run.sh
