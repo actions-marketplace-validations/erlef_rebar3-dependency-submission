@@ -173,6 +173,7 @@ accepting any such warranty or additional liability.
 END OF TERMS AND CONDITIONS
 
 Copyright 2025, Max Sörliden Nordlund <max.nordlund@kivra.com>.
+
 Copyright 2026, Kivra AB.
 
 Licensed under the Apache License, Version 2.0 (the "License");
