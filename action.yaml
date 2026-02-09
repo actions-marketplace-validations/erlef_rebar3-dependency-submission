@@ -1,7 +1,7 @@
 ---
 name: "Rebar3 Dependency Submission"
-description: >
-  "Calculates dependencies for Rebar3 and submits the list to the GitHub Dependency Submission API"
+# yamllint disable-line rule:line-length
+description: "Calculates dependencies for Rebar3 and submits the list to the GitHub Dependency Submission API"
 author: "Kivra"
 branding:
   icon: "arrow-up"
