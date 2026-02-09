@@ -1,6 +1,5 @@
 -module(rebar3_dependency_submission_common).
 
-%% API
 -define(API, [
     format_markdown/2,
     git_ls_files/1,

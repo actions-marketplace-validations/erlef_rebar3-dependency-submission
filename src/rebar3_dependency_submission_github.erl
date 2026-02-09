@@ -44,8 +44,7 @@ submit(#{token := Token} = Flags, Snapshot) ->
     Body = json:encode(Snapshot),
     Request = {URL, Headers, "application/json", Body},
     HttpOptions = [
-        %% 30 seconds
-        {timeout, 30_000}
+        {timeout, timer:seconds(30)}
     ],
     Options = [
         {body_format, binary},
