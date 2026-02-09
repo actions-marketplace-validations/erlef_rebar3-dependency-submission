@@ -1,7 +1,9 @@
 -module(rebar_dependency_submission).
 
 %% API exports
--export([main/1]).
+-define(API, [main/1]).
+-export(?API).
+-ignore_xref(?API).
 
 -include("internal.hrl").
 

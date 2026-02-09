@@ -1,19 +1,14 @@
 -module(rebar_dependency_submission_rebar).
 
--export([
-    consult/1,
+-define(API, [
     from/1,
-    new/0
-]).
-
--export([
-    app/2,
+    new/0,
     app_load/1,
     app_src/2,
-    config_if_exists/1,
-    hex_metadata/2,
-    lock/2
+    config_if_exists/1
 ]).
+-export(?API).
+-ignore_xref(?API).
 
 -export_type([
     t/0

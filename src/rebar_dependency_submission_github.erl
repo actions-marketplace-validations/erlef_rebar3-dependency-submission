@@ -1,24 +1,21 @@
 -module(rebar_dependency_submission_github).
 -compile({no_auto_import, [error/3]}).
 
--export([
+-define(API, [
+    notice/2,
+    notice/3,
+    warning/2,
+    warning/3,
     start/0,
-    submit/2
-]).
-
--export([
-    add_mask/1,
+    submit/2,
     debug/2,
     end_group/0,
     error/2,
     error/3,
-    group/1,
-    log/4,
-    notice/2,
-    notice/3,
-    warning/2,
-    warning/3
+    group/1
 ]).
+-export(?API).
+-ignore_xref(?API).
 
 -include("internal.hrl").
 

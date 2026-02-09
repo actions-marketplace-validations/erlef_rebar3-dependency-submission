@@ -1,15 +1,15 @@
 -module(rebar_dependency_submission_common).
 
 %% API
--export([
+-define(API, [
     format_markdown/2,
     git_ls_files/1,
     to_binary/1,
-    to_list/1,
-    version/0
+    version/0,
+    format_error/2
 ]).
-
--export([format_error/2]).
+-export(?API).
+-ignore_xref(?API).
 
 -include("internal.hrl").
 

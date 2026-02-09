@@ -1,8 +1,10 @@
 -module(rebar_dependency_submission_snapshot).
 
--export([
+-define(API, [
     new/1
 ]).
+-export(?API).
+-ignore_xref(?API).
 
 -export_type([
     t/0

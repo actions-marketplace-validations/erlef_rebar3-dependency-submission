@@ -7,10 +7,12 @@ variables. If any required options are missing `parse/1` will write error
 messages to standard error and exit with a non-zero status code.
 """.
 
--export([
+-define(API, [
     parse/1,
     usage/0
 ]).
+-export(?API).
+-ignore_xref(?API).
 
 -export_type([
     t/0
