@@ -43,4 +43,9 @@ jobs:
           rebar3 as test ci
 
       - name: Submit snapshot
-        run: ./_build/default/bin/rebar_dependency_submission --token ${{ github.token }}
+        run: |
+          ./_build/default/bin/rebar_dependency_submission --token ${{ github.token }}
+
+      - name: Test 'scripts'
+        run: |
+          ./scripts/build-and-run.sh
