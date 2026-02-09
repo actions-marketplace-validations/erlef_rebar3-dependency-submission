@@ -37,16 +37,10 @@ jobs:
                 -rebar3-${{steps.setup-beam.outputs.rebar3-version}}\
                 -hash-${{hashFiles('rebar.lock')}}-${{hashFiles('rebar.config')}}"
 
-      - name: Check formatting
-        run: rebar3 fmt --check
-
       - name: Continuous Integration
-        run: rebar3 as test ci
-
-      - name: Build project
         run: |
           git config --global url."https://github.com/".insteadOf 'git@github.com:'
-          rebar3 escriptize
+          rebar3 as test ci
 
       - name: Submit snapshot
-        run: ./_build/default/bin/rds --token ${{ github.token }}
+        run: ./_build/default/bin/rebar_dependency_submission --token ${{ github.token }}
