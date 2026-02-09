@@ -6,6 +6,10 @@ concurrency:
   group: ${{github.workflow}}-${{github.ref}}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
+# The API requires write permission on the repository to submit dependencies
+permissions:
+  contents: write
+
 jobs:
   ci:
     runs-on: ubuntu-24.04
