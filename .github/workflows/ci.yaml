@@ -70,8 +70,8 @@ jobs:
           ./_build/default/bin/rebar3_dependency_submission --token ${{ github.token }}
 
       - name: Test release
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh workflow run release.yaml \
-            --ref ${{ github.ref }}
+        uses: ./.github/actions/release
+        with:
+          tag: ${{ github.sha }}
+          github_actor: ${{ github.actor }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
