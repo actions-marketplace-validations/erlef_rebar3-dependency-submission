@@ -39,7 +39,6 @@ runs:
         docker run \
           --rm \
           --volume "${{ github.workspace }}:${{ github.workspace }}" \
-          --workdir "${{ github.workspace }}" \
           --env GITHUB_API_URL="${GITHUB_API_URL}" \
           --env GITHUB_SERVER_URL="${GITHUB_SERVER_URL}" \
           --env GITHUB_WORKFLOW="${GITHUB_WORKFLOW}" \
@@ -55,7 +54,20 @@ runs:
     - name: Create a GitHub release
       if: github.event_name == 'workflow_dispatch' && inputs.tag != ''
       run: |
-        gh release create ${{ inputs.tag }} --generate-notes --latest
+        gh release create ${{ inputs.tag }} --generate-notes
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+      shell: bash
+
+    - name: Update GitHub Release
+      if: github.event_name == 'workflow_dispatch' && inputs.tag != ''
+      run: |
+        gh release edit ${{ inputs.tag }} \
+          --notes "$(gh release view ${{ inputs.tag }} --json body --template '{{.body}}')
+
+          ---
+          **Docker Image:** ghcr.io/${{ github.repository }}:${{ inputs.tag }}
+          **Digest:** \`${{ steps.build-push-action.outputs.digest }}\`"
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
       shell: bash
