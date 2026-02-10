@@ -1,17 +1,16 @@
--module(rds_common).
+-module(rebar3_dependency_submission_common).
 
-%% API
--export([
+-define(API, [
     format_markdown/2,
     git_ls_files/1,
     to_binary/1,
-    to_list/1,
-    version/0
+    version/0,
+    format_error/2
 ]).
+-export(?API).
+-ignore_xref(?API).
 
--export([format_error/2]).
-
--include("internal.hrl").
+-include("rebar3_dependency_submission_internal.hrl").
 
 -doc "`m:erl_error` callback.".
 format_error(_, [{?MODULE, _Function, _Arguments, Info} | _StackTrace]) ->
@@ -65,7 +64,7 @@ to_list(Chardata) ->
     end.
 
 version() ->
-    {ok, PluginVsn} = application:get_key(rebar_dependency_submission, vsn),
+    {ok, PluginVsn} = application:get_key(rebar3_dependency_submission, vsn),
     PluginVsn.
 
 -doc """
@@ -75,7 +74,11 @@ This handles all filenames, including those with newlines.
 """.
 git_ls_files(Directory) ->
     Port = open_port({spawn_executable, os:find_executable("git")}, [
-        stream, binary, hide, {args, ["ls-files", "--full-name", "-z"]}, {cd, Directory}
+        stream,
+        binary,
+        hide,
+        {args, ["ls-files", "--full-name", "-z"]},
+        {cd, Directory}
     ]),
     MonitorRef = monitor(port, Port),
     GitFiles = read_nul_separated_files(Port, MonitorRef, <<>>, []),
@@ -86,12 +89,18 @@ git_ls_files(Directory) ->
 read_nul_separated_files(Port, MonRef, LeftOver, Files) when is_port(Port) ->
     receive
         {Port, {data, Bytes}} ->
-            case binary:split(<<LeftOver/binary, Bytes/binary>>, <<0>>, [global]) of
+            case
+                binary:split(<<LeftOver/binary, Bytes/binary>>, <<0>>, [global])
+            of
                 [File] ->
                     read_nul_separated_files(Port, MonRef, <<>>, [File | Files]);
                 Files0 when is_list(Files0) ->
-                    {Files1, [LeftOver]} = lists:split(length(Files0) - 1, Files0),
-                    read_nul_separated_files(Port, MonRef, LeftOver, [Files1 | Files])
+                    {Files1, [LeftOver]} = lists:split(
+                        length(Files0) - 1, Files0
+                    ),
+                    read_nul_separated_files(Port, MonRef, LeftOver, [
+                        Files1 | Files
+                    ])
             end;
         {'DOWN', MonRef, _, _, _} ->
             lists:flatten(Files);

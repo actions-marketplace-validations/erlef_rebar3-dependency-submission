@@ -1,9 +1,18 @@
 # Directories
-.github/
-_build/
-docs/
+/.github/
+/.rebar3/
+/_*
+/_build/
+/doc/
+/scripts/
+/tests/
 
 # Files
-.dockerignore
-Dockerfile*
-README.md
+/.gitignore
+/.tool-versions
+/action.yaml
+/erl_crash.dump
+/example.lock
+/LICENSE.md
+/README.md
+/rebar3.crashdump

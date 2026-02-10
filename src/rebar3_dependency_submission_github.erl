@@ -1,50 +1,50 @@
--module(rds_github).
+-module(rebar3_dependency_submission_github).
 -compile({no_auto_import, [error/3]}).
 
--compile([export_all]).
-
--export([
+-define(API, [
+    notice/2,
+    notice/3,
+    warning/2,
+    warning/3,
     start/0,
-    submit/2
-]).
-
--export([
-    add_mask/1,
+    submit/2,
     debug/2,
     end_group/0,
     error/2,
     error/3,
-    group/1,
-    log/4,
-    notice/2,
-    notice/3,
-    warning/2,
-    warning/3
+    group/1
 ]).
+-export(?API).
+-ignore_xref(?API).
 
--include("internal.hrl").
+-include("rebar3_dependency_submission_internal.hrl").
 
 start() ->
-    %% Use Mozilla CA store (rebar3 does this too)
+    %% Use Mozilla CA store (Rebar3 does this too)
     ok = application:set_env(public_key, cacerts_path, certifi:cacertfile()),
     public_key:cacerts_clear(),
     public_key:cacerts_load().
 
--spec submit(rds_options:t(), rds_snapshot:t()) -> {ok, Result} | {error, term()} when
+-spec submit(
+    rebar3_dependency_submission_options:t(),
+    rebar3_dependency_submission_snapshot:t()
+) -> {ok, Result} | {error, term()} when
     Result :: #{status := integer(), binary() => binary()}.
 submit(#{token := Token} = Flags, Snapshot) ->
     URL = api_url(Flags),
     Headers = [
         {"Accept", ~"application/vnd.github+json"},
         {"Authorization", [~"Bearer ", Token]},
-        {"User-Agent", [~"rebar3-dependency-submission/", rds_common:version()]},
+        {"User-Agent", [
+            ~"rebar3-dependency-submission/",
+            rebar3_dependency_submission_common:version()
+        ]},
         {"X-GitHub-Api-Version", ~"2022-11-28"}
     ],
     Body = json:encode(Snapshot),
     Request = {URL, Headers, "application/json", Body},
     HttpOptions = [
-        %% 30 seconds
-        {timeout, 30_000}
+        {timeout, timer:seconds(30)}
     ],
     Options = [
         {body_format, binary},
@@ -58,10 +58,14 @@ submit(#{token := Token} = Flags, Snapshot) ->
                 {ok, JSON} ?= decode(Response),
                 {ok, JSON#{status => Status}}
             end;
-        {ok, {Status, Response}} when is_integer(Status) andalso is_binary(Response) ->
+        {ok, {Status, Response}} when
+            is_integer(Status) andalso is_binary(Response)
+        ->
             maybe
                 {ok, #{~"message" := Message}} ?= decode(Response),
-                {error, <<(integer_to_binary(Status))/binary, " ", Message/binary>>}
+                {error, <<
+                    (integer_to_binary(Status))/binary, " ", Message/binary
+                >>}
             else
                 {ok, JSON} -> {error, {Status, JSON}};
                 {error, _JSONDecodeError} -> {error, {Status, Response}}
@@ -72,9 +76,11 @@ submit(#{token := Token} = Flags, Snapshot) ->
 
 api_url(#{api_url := ApiUrl, repo := RepoOwner} = Flags) ->
     case
-        uri_string:recompose(ApiUrl#{path := ["/repos/", RepoOwner, "/dependency-graph/snapshots"]})
+        uri_string:recompose(ApiUrl#{
+            path := ["/repos/", RepoOwner, "/dependency-graph/snapshots"]
+        })
     of
-        {error, Reason} -> ?error(Reason, [Flags], #{});
+        {error, Reason, _} -> ?error(Reason, [Flags], #{});
         URL -> URL
     end.
 
@@ -160,20 +166,21 @@ See https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-
 end_group() ->
     workflow_command(endgroup, #{}, "", []).
 
--doc """
-Prevents the given value from being shown in the log on GitHub.
-
-See https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-commands#masking-a-value-in-a-log
-""".
-add_mask(Value) ->
-    workflow_command(add_mask, #{}, "~ts", [Value]).
-
 -doc false.
-workflow_command(Type, Parameters, Format, Args) when is_atom(Type) andalso is_map(Parameters) ->
+workflow_command(Type, Parameters, Format, Args) when
+    is_atom(Type) andalso is_map(Parameters)
+->
     Message =
         case os:getenv("GITHUB_ACTIONS") of
-            false -> [rds_common:format_markdown(Format, Args), $\n];
-            _ -> format_command(Type, Parameters, Format, Args)
+            false ->
+                [
+                    rebar3_dependency_submission_common:format_markdown(
+                        Format, Args
+                    ),
+                    $\n
+                ];
+            _ ->
+                format_command(Type, Parameters, Format, Args)
         end,
     io:put_chars(standard_io, Message).
 
@@ -181,10 +188,18 @@ workflow_command(Type, Parameters, Format, Args) when is_atom(Type) andalso is_m
 format_command(Type, Parameters, Format, Args) when
     is_atom(Type) andalso map_size(Parameters) =:= 0
 ->
-    io_lib:format("::~ts::~ts\n", [Type, rds_common:format_markdown(Format, Args)]);
-format_command(Type, Parameters, Format, Args) when is_atom(Type) andalso is_map(Parameters) ->
+    io_lib:format("::~ts::~ts\n", [
+        Type, rebar3_dependency_submission_common:format_markdown(Format, Args)
+    ]);
+format_command(Type, Parameters, Format, Args) when
+    is_atom(Type) andalso is_map(Parameters)
+->
     Extra = string:join(maps:fold(fun format_parameter/3, [], Parameters), ","),
-    io_lib:format("::~ts ~ts::~ts\n", [Type, Extra, rds_common:format_markdown(Format, Args)]).
+    io_lib:format("::~ts ~ts::~ts\n", [
+        Type,
+        Extra,
+        rebar3_dependency_submission_common:format_markdown(Format, Args)
+    ]).
 
 -doc false.
 format_parameter(Parameter, Value, Extra) ->

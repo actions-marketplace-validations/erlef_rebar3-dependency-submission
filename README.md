@@ -1,6 +1,6 @@
-# GitHub Dependency Submission Action for Rebar
+# GitHub Dependency Submission Action for Rebar3
 
-This GitHub Action extracts dependencies from an Rebar project and submits them to
+This GitHub Action extracts dependencies from an Rebar3 project and submits them to
 [GitHub's Dependency Submission API](https://docs.github.com/en/rest/dependency-graph/dependency-submission),
 helping you unlock advanced dependency graph and security features for your
 project.
@@ -10,8 +10,8 @@ project.
 By submitting your dependencies to GitHub:
 
 - 🔐 **Stay secure** – Receive
-  [Dependabot alerts and security updates](https://docs.github.com/en/code-security/dependabot/dependabot-alerts) for
-  known vulnerabilities in your direct and transitive dependencies.
+  [Dependabot alerts and security updates](https://docs.github.com/en/code-security/dependabot/dependabot-alerts)
+  for known vulnerabilities in your direct and transitive dependencies.
 - 🔎 **Improve visibility** – View your full dependency graph, including
   dependencies not found in lockfiles, right on GitHub.
 - 🔁 **Automated updates** – Dependabot can automatically open pull requests to
@@ -28,7 +28,7 @@ This action is intended to be used within a GitHub Actions workflow.
 ### Minimal Example
 
 ```yaml
-name: "Rebar Dependency Submission"
+name: "Rebar3 Dependency Submission"
 
 on:
   push:
@@ -41,8 +41,8 @@ permissions:
 
 jobs:
   report_rebar_deps:
-    name: "Report Rebar Dependencies"
-    runs-on: ubuntu-latest
+    name: "Report Rebar3 Dependencies"
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: kivra/rebar-dependency-submission@v1
@@ -51,7 +51,7 @@ jobs:
 ### Example Using `actions/dependency-review-action`
 
 ```yaml
-name: "Rebar Dependency Submission"
+name: "Rebar3 Dependency Submission"
 
 on:
   push:
@@ -65,8 +65,8 @@ permissions:
 
 jobs:
   report_rebar_deps:
-    name: "Report Rebar Dependencies"
-    runs-on: ubuntu-latest
+    name: "Report Rebar3 Dependencies"
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: kivra/rebar-dependency-submission@v1
@@ -79,19 +79,21 @@ jobs:
 | Name           | Description                                                                                 | Default                     |
 |----------------|---------------------------------------------------------------------------------------------|-----------------------------|
 | `token`        | GitHub token to use for submission.                                                         | `${{ github.token }}`       |
+<!-- markdownlint-disable MD013 -->
 <!--| `project-path` | Path to the Mix project.                                                                    | `${{ github.workspace }}`   |-->
 <!--| `install-deps` | Whether to run `mix deps.get` before analysis. Set to `true` for accurate transitive info.  | `false`                     |-->
 <!--| `ignore`       | A comma-separated list of directories to ignore when searching for Mix projects.            | *(none)*                    |-->
 
-<!--> ⚠️ If `install-deps` is set to `false`, the action may not fully resolve transitive dependencies, leading to an incomplete dependency graph.-->
+<!-- > ⚠️ If `install-deps` is set to `false`, the action may not fully resolve transitive dependencies, leading to an incomplete dependency graph.-->
+<!-- markdownlint-enable -->
 
 ## Outputs
 
 | Name                   | Description                                 | Example Value                                                                 |
 |------------------------|---------------------------------------------|-------------------------------------------------------------------------------|
 | `submission-json-path` | Path to the generated submission JSON file. | `/tmp/submission-213124323.json`                                              |
-| `snapshot-id`        | ID of the submission.                       | `1234`                                                                        |
-| `snapshot-api-url`   | URL of the submission API.                  | `https://api.github.com/repos/{owner}/{repo}/dependency-graph/snapshots/1234` |
+| `snapshot-id`          | ID of the submission.                       | `1234`                                                                        |
+| `snapshot-api-url`     | URL of the submission API.                  | `https://api.github.com/repos/{owner}/{repo}/dependency-graph/snapshots/1234` |
 
 <!--
 ## OS and Architecture Support
@@ -111,7 +113,7 @@ This action supports the following operating systems and architectures, tested u
 
 ## License
 
-Copyright 2025 Kivra
+Copyright 2026 Kivra
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.

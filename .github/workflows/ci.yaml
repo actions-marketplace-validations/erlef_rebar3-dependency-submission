@@ -1,28 +1,111 @@
+---
+name: Continuous Integration
+
 on:
-  - push
+  - pull_request
+
 concurrency:
-  group: ${{ github.ref }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 # The API requires write permission on the repository to submit dependencies
 permissions:
   contents: write
+  actions: write
+  packages: write
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
+  ci:
+    runs-on: ubuntu-24.04
 
-      - uses: erlef/setup-beam@v1.20.4
+    strategy:
+      fail-fast: false
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Install Erlang
+        uses: erlef/setup-beam@e6d7c94229049569db56a7ad5a540c051a010af9 # v1.20.4
+        id: setup-beam
         with:
           version-file: .tool-versions
           version-type: strict
 
-      - name: Build project
-        run: |
-          git config --global url."https://github.com/".insteadOf 'git@github.com:'
-          rebar3 escriptize
+      - name: Restore Erlang cache
+        uses: actions/cache/restore@8b402f58fbc84540c8b491a91e594a4576fec3d7 # v5.0.2
+        with:
+          path: |
+            _build
+            ~/.cache/rebar3
+            !_build/test/logs
+          key: unused
+          # Pulls generically: without run id or run attempt
+          # Otherwise, if trying to use the same key cache/save later errors out
+          restore-keys: "cache-for\
+                         -os-${{ runner.os }}\
+                         -otp-${{ steps.setup-beam.outputs.otp-version }}\
+                         -rebar3-${{ steps.setup-beam.outputs.rebar3-version }}\
+                         -hash-${{ hashFiles('rebar.lock') }}-${{ hashFiles('rebar.config') }}\
+                         -"
 
-      - name: Submit snapshot
-        run: ./_build/default/bin/rds --token ${{ github.token }}
+      - name: Run Continuous Integration
+        run: |
+          git config --global \
+            url."https://github.com/".insteadOf 'git@github.com:'
+          rebar3 ci
+
+      - name: Save Erlang cache
+        uses: actions/cache/save@8b402f58fbc84540c8b491a91e594a4576fec3d7 # v5.0.2
+        with:
+          path: |
+            _build
+            ~/.cache/rebar3
+            !_build/test/logs
+          # Saves specifically: with run id and run attempt
+          key: "cache-for\
+                -os-${{ runner.os }}\
+                -otp-${{ steps.setup-beam.outputs.otp-version }}\
+                -rebar3-${{ steps.setup-beam.outputs.rebar3-version }}\
+                -hash-${{ hashFiles('rebar.lock') }}-${{ hashFiles('rebar.config') }}\
+                -${{ github.run_id }}-${{ github.run_attempt }}"
+
+      - name: Submit local snapshot (test)
+        run: |
+          ./_build/default/bin/rebar3_dependency_submission --token ${{ github.token }}
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Docker image
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
+        id: build-push-action
+        with:
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          context: .
+          push: true
+          tags: ghcr.io/${{ github.repository }}:${{ github.sha }}
+
+      - name: Run Docker image
+        run: |
+          docker run \
+            --volume ".:${GITHUB_WORKSPACE}" \
+            --env GITHUB_API_URL="${GITHUB_API_URL}" \
+            --env GITHUB_SERVER_URL="${GITHUB_SERVER_URL}" \
+            --env GITHUB_WORKFLOW="${GITHUB_WORKFLOW}" \
+            --env GITHUB_JOB="${GITHUB_JOB}" \
+            --env GITHUB_REF="${GITHUB_REF}" \
+            --env GITHUB_REPOSITORY="${GITHUB_REPOSITORY}" \
+            --env GITHUB_RUN_ID="${GITHUB_RUN_ID}" \
+            --env GITHUB_SHA="${GITHUB_SHA}" \
+            --env GITHUB_TOKEN="${{ secrets.GITHUB_TOKEN }}" \
+            "ghcr.io/${{ github.repository }}@${{ steps.build-push-action.outputs.digest }}" \
+            "$@"
