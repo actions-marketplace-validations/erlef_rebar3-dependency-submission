@@ -15,13 +15,16 @@ set -euo pipefail
 : "${GITHUB_TOKEN:=}"
 
 # Debugging helper.
-echo "::group::GITHUB_ environment variables"
-env | grep GITHUB_
-echo "::endgroup::"
+if [[ "${GITHUB_ACTIONS:-false}" == "true" ]]; then
+  echo "::group::GITHUB_ environment variables"
+  env | grep GITHUB_
+  echo "::endgroup::"
+fi
 
 echo "Building... this may take a while..."
 DOCKER_BUILD=$(docker build --quiet --build-arg "workdir=${PWD}" . || exit $?)
 echo "Done!"
+echo ""
 
 echo "Running..."
 docker run \
@@ -36,7 +39,6 @@ docker run \
   --env GITHUB_RUN_ID="${GITHUB_RUN_ID}" \
   --env GITHUB_SHA="${GITHUB_SHA}" \
   --env GITHUB_TOKEN="${GITHUB_TOKEN}" \
-  --env GITHUB_WORKSPACE="${GITHUB_WORKSPACE}" \
   "${DOCKER_BUILD}" \
   "$@"
 echo "Done!"
