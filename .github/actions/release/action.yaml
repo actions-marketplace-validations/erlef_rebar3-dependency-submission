@@ -33,6 +33,7 @@ runs:
         context: .
         push: true
         tags: ghcr.io/${{ github.repository }}:${{ inputs.tag }}
+        provenance: true
 
     - name: Run Docker image
       run: |
@@ -52,6 +53,7 @@ runs:
       shell: bash
 
     - name: Create a GitHub release
+      # yamllint disable-line rule:line-length
       if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.tag != ''
       run: |
         gh release create "${{ inputs.tag }}" --generate-notes
@@ -60,6 +62,7 @@ runs:
       shell: bash
 
     - name: Update GitHub Release
+      # yamllint disable-line rule:line-length
       if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.tag != ''
       run: |
         PREV_NOTES=$(gh release view "${{ inputs.tag }}" --json body --template '{{.body}}')
