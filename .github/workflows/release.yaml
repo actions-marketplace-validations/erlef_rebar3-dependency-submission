@@ -55,6 +55,7 @@ jobs:
           gh release create \
             --generate-notes \
             --verify-tag \
+            --latest=false \
             "${{ github.ref_name }}" \
             _build/default/bin/rebar3_dependency_submission*
         env:

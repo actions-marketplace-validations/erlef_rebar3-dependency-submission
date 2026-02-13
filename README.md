@@ -27,6 +27,11 @@ By submitting your dependencies to GitHub:
 
 This action is intended to be used within a GitHub Actions workflow.
 
+**Note**: `rebar.lock` is discovered via `git ls-files`, so it must be both tracked by Git and
+checked out in the workspace. If it is excluded from the checkout (for example, via sparse checkout
+or path filters), this action cannot resolve the necessary app names and versions and will fail when
+attempting to read the lockfile.
+
 ### Minimal Example
 
 ```yaml
@@ -38,6 +43,7 @@ permissions:
   contents: write
 
 jobs:
+  # Run in its own job so the Erlang/Rebar3 installation doesn't affect other jobs
   rebar3-dependency-submission:
     runs-on: ubuntu-24.04
     steps:
@@ -57,10 +63,14 @@ jobs:
 This action was tested for the following operating systems and architectures, using the corresponding
 [GitHub-hosted runners](https://docs.github.com/en/actions/using-github-hosted-runners/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources):
 
-| Operating System | Architecture | Tested Runner      |
-|------------------|--------------|--------------------|
-| Linux            | x64          | `ubuntu-24.04`     |
-| Linux            | ARM64        | `ubuntu-24.04-arm` |
+| Operating System | Architecture | Works? | Tested Runner      |
+|------------------|--------------|--------|--------------------|
+| Linux            | x64          | ✅     | `ubuntu-24.04`     |
+| Linux            | ARM64        | ✅     | `ubuntu-24.04-arm` |
+| macOS            | x64          | ❌     | `macos-13`         |
+| macOS            | ARM64        | ✅     | `macos-15`         |
+| Windows          | x64          | ✅     | `windows-2022`     |
+| Windows          | ARM64        | ❌     | `windows-2025`     |
 
 If you find it working for another operating system / architecture, feel free to open a pull request
 to update the table above.

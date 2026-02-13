@@ -206,7 +206,8 @@ to_purl_internal(#pkg{name = Name, version = Version}) ->
     );
 to_purl_internal(#git{repo = Repo, ref = {ref, Ref}}) ->
     purl:from_resource_uri(
-        Repo, rebar3_dependency_submission_common:to_binary(Ref)
+        rebar3_dependency_submission_common:to_binary(Repo),
+        rebar3_dependency_submission_common:to_binary(Ref)
     );
 to_purl_internal(#git_subdir{repo = Repo, ref = {ref, Ref}, subdir = SubPath0}) ->
     maybe
@@ -217,7 +218,8 @@ to_purl_internal(#git_subdir{repo = Repo, ref = {ref, Ref}, subdir = SubPath0}) 
         ),
         {ok, Purl} ?=
             purl:from_resource_uri(
-                Repo, rebar3_dependency_submission_common:to_binary(Ref)
+                rebar3_dependency_submission_common:to_binary(Repo),
+                rebar3_dependency_submission_common:to_binary(Ref)
             ),
         {ok, Purl#purl{subpath = SubPath1}}
     end.

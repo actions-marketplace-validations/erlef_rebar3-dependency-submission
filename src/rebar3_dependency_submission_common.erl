@@ -97,10 +97,10 @@ read_nul_separated_files(Port, MonRef, LeftOver, Files) when is_port(Port) ->
                 [File] ->
                     read_nul_separated_files(Port, MonRef, <<>>, [File | Files]);
                 Files0 when is_list(Files0) ->
-                    {Files1, [LeftOver]} = lists:split(
+                    {Files1, [LeftOver1]} = lists:split(
                         length(Files0) - 1, Files0
                     ),
-                    read_nul_separated_files(Port, MonRef, LeftOver, [
+                    read_nul_separated_files(Port, MonRef, LeftOver1, [
                         Files1 | Files
                     ])
             end;
