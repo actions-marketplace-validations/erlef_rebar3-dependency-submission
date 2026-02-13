@@ -91,7 +91,8 @@ app(#{applications := Apps} = State0, App) ->
         AppSrcPattern = lists:concat([
             "_build/default/lib/", App, "/**/", AppSrcFile, "{,.script}"
         ]),
-        [PathAppSrc0 | _] ?= filelib:wildcard(AppSrcPattern),
+        {app_src, [PathAppSrc0 | _]} ?=
+            {app_src, filelib:wildcard(AppSrcPattern)},
         non_existing ?= app_src(State0, PathAppSrc0),
         ?error(enoent, [App, State0], #{
             reason => {file, format_error, [enoent]}
@@ -101,7 +102,10 @@ app(#{applications := Apps} = State0, App) ->
             app_src(State0, PathAppSrc1);
         [{application, _, AppManifest}] ->
             State0#{applications := Apps#{App => maps:from_list(AppManifest)}};
-        PathApp when ?is_string(PathApp) ->
+        {app_src, PathApp} when PathApp =:= [] ->
+            % .app.src{,.script} not available, so best-effort wins
+            State0;
+        {app_src, PathApp} when ?is_string(PathApp) ->
             [{application, _, AppManifest}] = consult(PathApp),
             State0#{applications := Apps#{App => maps:from_list(AppManifest)}};
         {app, AppManifest} when is_map(AppManifest) ->
@@ -175,19 +179,31 @@ config_if_exists_internal(PathRebarConfig) ->
 
 -spec lock(t(), file:name_all()) -> t().
 lock(State, PathRebarLock) ->
-    [{LockVersion, Packages}, PackageHashes] = consult(PathRebarLock),
-    PkgHash = proplists:get_value(pkg_hash, PackageHashes, []),
-    PkgHashExt = proplists:get_value(pkg_hash_ext, PackageHashes, []),
-    State#{
-        lock_version := LockVersion,
-        packages :=
-            #{
-                binary_to_atom(LocalName) => {Version, DepLevel}
-             || {LocalName, Version, DepLevel} <- Packages
-            },
-        pkg_hash := maps:from_list(PkgHash),
-        pkg_hash_ext := maps:from_list(PkgHashExt)
-    }.
+    [{LockVersion, Packages}, PackageHashes] =
+        case consult(PathRebarLock) of
+            [[]] ->
+                % rebar.lock might be [].
+                [{undefined, []}, []];
+            _ = Other ->
+                Other
+        end,
+    case LockVersion of
+        undefined ->
+            State;
+        _ ->
+            PkgHash = proplists:get_value(pkg_hash, PackageHashes, []),
+            PkgHashExt = proplists:get_value(pkg_hash_ext, PackageHashes, []),
+            State#{
+                lock_version := LockVersion,
+                packages :=
+                    #{
+                        binary_to_atom(LocalName) => {Version, DepLevel}
+                     || {LocalName, Version, DepLevel} <- Packages
+                    },
+                pkg_hash := maps:from_list(PkgHash),
+                pkg_hash_ext := maps:from_list(PkgHashExt)
+            }
+    end.
 
 -doc """
 A variant of `file:consult/1` that raises errors instead of returning them.
