@@ -124,7 +124,8 @@ app_load(App) ->
     end.
 
 app_src(#{applications := Apps} = State, Path) ->
-    case filename:extension(Path) of
+    Extension = unicode:characters_to_list(filename:extension(Path)),
+    case Extension of
         ".src" ->
             maybe
                 [{application, App, AppManifest0}] ?= consult_if_exists(Path),
