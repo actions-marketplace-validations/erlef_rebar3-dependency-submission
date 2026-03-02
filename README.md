@@ -48,8 +48,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6.0.2
-      # TBD(erlef): update uses
-      - uses: kivra/rebar3-dependency-submission@v1.0.0
+      - uses: erlef/rebar3-dependency-submission@v1.0.0
 ```
 
 ## Inputs
@@ -77,9 +76,7 @@ to update the table above.
 
 ## License
 
-Copyright 2026 Kivra
-
-<!-- # TBD(erlef): Copyright? -->
+Copyright 2026 Kivra AB
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
